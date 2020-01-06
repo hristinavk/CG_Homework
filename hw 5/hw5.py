@@ -22,6 +22,11 @@ CONTOL_LINES_ON = True
 CONTROL_COLOR = (0, 51, 51)
 SEGMENT_COUNT = 500
 
+points = []
+
+control_points = [[]]
+
+curves = []
 
 def set_pixel(pixel, color = black, pixel_size = 1):
     surface = pygame.display.get_surface()
@@ -97,27 +102,42 @@ def generate_simple_line(point_A, point_B, pixels):
         pixels.append((x + x1, y + y1))
 
 
-def draw_contol_lines_and_points(points):
-    lines = []
+def draw_contol_lines_and_points():
 
-    for i in range(len(points) - 1):
-        generate_simple_line(points[i], points[i + 1], lines)
+    if not CONTOL_LINES_ON:
+        return;
 
-    for pixel in lines:
-        set_pixel(pixel, CONTROL_COLOR)
+    for points in control_points:
+        for point in points:
+            set_pixel((point[0] - 3, point[1] - 3), CONTROL_COLOR, 6)
 
-    for point in points:
-        set_pixel(point, CONTROL_COLOR, 10)
+        if len(points) <= 1:
+            continue
 
-def draw_bezier_curve(points):
-    if CONTOL_LINES_ON:
-        draw_contol_lines_and_points(points)
+        lines = []
 
-    curve = []
-    calculate_bezier_curve_cubic(points, curve)
-    color = colors[int(random.random() * (colors_count + 1)) % colors_count]
-    for point in curve:
-        set_pixel((int(point[0]), int(point[1])), color)
+        for i in range(len(points) - 1):
+            generate_simple_line(points[i], points[i + 1], lines)
+
+        for pixel in lines:
+            set_pixel(pixel, CONTROL_COLOR)
+
+        
+
+def add_bezier_curve(points):
+    curves.append([])
+    calculate_bezier_curve_cubic(points, curves[-1])    
+
+def draw_bezier_curves():
+    #if CONTOL_LINES_ON:
+    #    draw_contol_lines_and_points(points)
+
+    #curve = []
+    
+    for curve in curves:
+        color = red
+        for point in curve:
+            set_pixel((int(point[0]), int(point[1])), color)
 
 
 pygame.init()
@@ -128,25 +148,28 @@ screen = pygame.display.set_mode(screen_size)
 
 screen.fill(white)
 
-points = []
 
 while 1:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             sys.exit()
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_w:
+            if event.key == pygame.K_k:
                 if CONTOL_LINES_ON:
                     CONTOL_LINES_ON = False
                 else:
                     CONTOL_LINES_ON = True
         if event.type == pygame.MOUSEBUTTONUP:
             last_click = pygame.mouse.get_pos()
-            if len(points) < 4:
-                points.append(last_click)
-                if len(points) == 4:
-                    draw_bezier_curve(points)
+            if len(control_points[-1]) < 4:
+                control_points[-1].append(last_click)
+                if len(control_points[-1]) == 4:
+                    add_bezier_curve(control_points[-1])
                     pygame.display.flip()
-                    points = []
-                
+                    control_points.append([])
+    
+    pygame.display.get_surface().fill(white)
+    draw_contol_lines_and_points()
+    draw_bezier_curves()
+
     pygame.display.flip()
