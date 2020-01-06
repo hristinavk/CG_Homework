@@ -92,12 +92,12 @@ def draw_lines_and_points(points, color = black, draw_points = True):
 
 def draw_cutting_object(cutting_object_points):
     if len(cutting_object_points) == 1:
-        draw_lines_and_points(cutting_object_points, blue)
+        #draw_lines_and_points(cutting_object_points, blue, False)
         return
 
     if(cutting_object == 'p'):
         draw_lines_and_points(cutting_object_points, blue)
-        draw_lines_and_points(cutting_object_points[-1:], white)
+        draw_lines_and_points([cutting_object_points[0]], white)
         return
 
     #else - rect cutting
@@ -106,7 +106,7 @@ def draw_cutting_object(cutting_object_points):
     points.append(cutting_object_points[1])
     points.append((cutting_object_points[0][0], cutting_object_points[1][1]))
     points.append(cutting_object_points[0])
-    draw_lines_and_points(points, blue)
+    draw_lines_and_points(points, blue, False)
 
 def calculate_and_draw_cutting():
     return
