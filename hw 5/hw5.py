@@ -149,6 +149,7 @@ control_points = [[(249, 101), (307, 141), (308, 213), (248, 246)],
 for points in control_points:
     add_bezier_curve(points)
 
+control_points.append([])
 
 while 1:
     for event in pygame.event.get():
