@@ -129,11 +129,6 @@ def add_bezier_curve(points):
     calculate_bezier_curve_cubic(points, curves[-1])    
 
 def draw_bezier_curves():
-    #if CONTOL_LINES_ON:
-    #    draw_contol_lines_and_points(points)
-
-    #curve = []
-    
     for curve in curves:
         color = red
         for point in curve:
@@ -147,6 +142,12 @@ screen_size = width, height = 640, 480
 screen = pygame.display.set_mode(screen_size)
 
 screen.fill(white)
+
+control_points = [[(249, 101), (307, 141), (308, 213), (248, 246)],
+                  [(338, 99), (276, 138), (275, 210), (347, 242)]]
+
+for points in control_points:
+    add_bezier_curve(points)
 
 
 while 1:
