@@ -86,7 +86,7 @@ def simple_flood_fill(pixel, color, old_color):
 
         if(get_pixel(current_pixel) == old_color):
             set_pixel(current_pixel, color)
-            time.sleep(0.001)
+            time.sleep(0.0005)
             pygame.display.flip()
             x, y = current_pixel;
             values.append((x - 1, y))
@@ -104,6 +104,8 @@ screen = pygame.display.set_mode(screen_size)
 
 screen.fill(white)
 
+filling_mode = False
+
 first_point = second_point = ()
 current_number_of_circles = 0
 
@@ -111,9 +113,12 @@ while 1:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             sys.exit()
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_f:
+                filling_mode =  not filling_mode
         if event.type == pygame.MOUSEBUTTONUP:
             last_click = pygame.mouse.get_pos()
-            if current_number_of_circles < num_circles_to_intersect:
+            if not filling_mode and current_number_of_circles < num_circles_to_intersect:
                 if first_point == ():
                     first_point = last_click
                     pygame.display.flip()
@@ -123,6 +128,8 @@ while 1:
                     first_point = second_point = ()
                     current_number_of_circles += 1
                     pygame.display.flip()
+                if current_number_of_circles == num_circles_to_intersect:
+                    filling_mode = True
             else:
                 simple_flood_fill(last_click, colors[int(random.random() * colors_count) % colors_count], white)
                 pygame.display.flip()
