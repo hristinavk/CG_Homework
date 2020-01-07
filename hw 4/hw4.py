@@ -116,22 +116,18 @@ def calculate_rectangle_cutting(xmin, ymin, xmax, ymax, polygon_verts):
     return
 
 def get_lines_intesection(l1_points, l2_points):
-    print "get lines intersection"
     l1x1, l1y1 = l1_points[0]
     l1x2, l1y2 = l1_points[1]
-    m1 = (l1y2 - l1y1) / (l1x2 - l1x1)
-    c1 = (-m1 * l1x1) + l1y1
+    m1 = float(l1y2 - l1y1) / float(l1x2 - l1x1)
 
     l2x1, l2y1 = l2_points[0]
     l2x2, l2y2 = l2_points[1]
-    m2 = (l2y2 - l2y1) / (l2x2 - l2x1)
-    c2 = (-m2 * l2x1) + l2y1
+    m2 = float(l2y2 - l2y1) / float(l2x2 - l2x1)
 
-    x = (c1 - c2) /  (m1 - m2)
-    y = m1 * x - c1
+    x = float((m1 * l1x1) - (m2 * l2x1) - l1y1 + l2y1) / float(m1 - m2)
+    y = m1 * (x - l1x1) + l1y1
 
-    return (x, y)
-
+    return (int(x), int(y))
 
 def calculate_half_plane_cutting(vector, polygon_verts):
 
@@ -139,8 +135,9 @@ def calculate_half_plane_cutting(vector, polygon_verts):
     p2 = vector[1]
     x1, y1 = p1
     x2, y2 = p2
-    m = (y2 - y1) / (x2 - x1)
-    c = (-m * x1) + y1
+    m = 0
+    if not x2 == x1:
+        m = float(y2 - y1) / float(x2 - x1)
 
     ox, oy = p1
     px, py = p2
@@ -149,11 +146,11 @@ def calculate_half_plane_cutting(vector, polygon_verts):
     qy = oy + math.sin(angle) * (px - ox) + math.cos(angle) * (py - oy)
     inside_point = (int(qx), int(qy))
 
-    draw_lines_and_points([inside_point], green)
+    get_line_eq = lambda point: m * (point[0] - x1) - point[1] + y1
 
-    get_line_eq_right_part_value = lambda point : m * point[0] - c
-    check_inside = lambda point : ((inside_point[1] < get_line_eq_right_part_value(inside_point)) and (point[1] < get_line_eq_right_part_value(point))) or\
-                                  ((inside_point[1] > get_line_eq_right_part_value(inside_point)) and (point[1] > get_line_eq_right_part_value(point)))
+    test_point_val = get_line_eq(inside_point)
+
+    check_same_sign = lambda v1, v2 : ((v1 > 0) and ( v2 > 0)) or ((v1 < 0) and (v2 < 0))
 
     cut_points = []
     verts_len = len(polygon_verts)
@@ -161,15 +158,18 @@ def calculate_half_plane_cutting(vector, polygon_verts):
         edge_p1 = polygon_verts[i];
         edge_p2 = polygon_verts[(i + 1) % verts_len]
 
-        p1_inside = check_inside(edge_p1)
-        p2_inside = check_inside(edge_p2)
+        p1_val = get_line_eq(edge_p1)
+        p2_val = get_line_eq(edge_p2)
+
+        p1_inside = check_same_sign(test_point_val, p1_val)
+        p2_inside = check_same_sign(test_point_val, p2_val)
 
         if p1_inside and p2_inside:
             cut_points.append(edge_p2)
         elif not(p1_inside or p2_inside):
             continue
         else:
-            crosspoint = get_lines_intesection([vector, (edge_p1, edge_p2)])
+            crosspoint = get_lines_intesection(vector, [edge_p1, edge_p2])
 
             if (not p1_inside) and p2_inside:
                 cut_points.append(crosspoint)
@@ -177,6 +177,7 @@ def calculate_half_plane_cutting(vector, polygon_verts):
             else:
                 cut_points.append(crosspoint)
 
+    cut_points.append(cut_points[0])
     draw_lines_and_points(cut_points, red, False)
 
 
