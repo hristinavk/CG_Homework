@@ -17,13 +17,14 @@ aquamarine = (0, 255, 255)
 yellow = (255, 255, 0)
 colors = [black, red, green, blue, purple, yellow, aquamarine]
 colors_count = len(colors)
-rand_color = 0
 
-use_bresenham_to_draw_line = False
+pixel_size = 1
 
 def set_pixel(pixel, color = black):
     surface = pygame.display.get_surface()
-    pygame.gfxdraw.pixel(surface, pixel[0], pixel[1], color)
+    for i in range(pixel_size):
+        for j in range(pixel_size):
+            pygame.gfxdraw.pixel(surface, pixel[0] + i, pixel[1] + j, color)
 
 def get_pixel(pixel):
     surface = pygame.display.get_surface()
@@ -74,10 +75,13 @@ def generate_bresenham_line(point_A, point_B, pixels):
                 x += incX
 
 def set_pixel_if_not_set(pixel, color):
-    if(get_pixel(pixel) == white):
-        set_pixel(pixel, color)
+    surface = pygame.display.get_surface()
+    for i in range(pixel_size):
+        for j in range(pixel_size):
+            if get_pixel((pixel[0] + i, pixel[1] + j)) == white : 
+                pygame.gfxdraw.pixel(surface, pixel[0] + i, pixel[1] + j, color)
 
-def draw_line(point_A, point_B, use_bresenham):
+def draw_line(point_A, point_B):
     line = []
 
     generate_bresenham_line(point_A, point_B, line)
@@ -88,9 +92,9 @@ def draw_line(point_A, point_B, use_bresenham):
 
     for pixel in line:
         x, y = pixel
-        surroundig_pixels = [(x - 1, y - 1), (x, y - 1), (x + 1, y - 1),
-                             (x - 1, y),                 (x + 1, y),
-                             (x - 1, y + 1), (x, y + 1), (x + 1, y + 1)]
+        surroundig_pixels = [(x - pixel_size, y - pixel_size), (x, y - pixel_size), (x + pixel_size, y - pixel_size),
+                             (x - pixel_size, y),                                   (x + pixel_size, y),
+                             (x - pixel_size, y + pixel_size), (x, y + pixel_size), (x + pixel_size, y + pixel_size)]
         for p in surroundig_pixels:
             set_pixel_if_not_set(p, red)
 
@@ -99,6 +103,8 @@ def draw_line(point_A, point_B, use_bresenham):
 
 
 pygame.init()
+
+pixel_size = input("Enter pixel size:\n")
 
 screen_size = width, height = 640, 480
 
@@ -120,7 +126,7 @@ while 1:
 
 
     if first_point != () and second_point != ():
-        draw_line(first_point, second_point, use_bresenham_to_draw_line)
+        draw_line(first_point, second_point)
         first_point = second_point = ()
     
     pygame.display.flip()
