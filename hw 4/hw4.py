@@ -109,10 +109,76 @@ def draw_cutting_object(cutting_object_points):
     draw_lines_and_points(points, blue, False)
 
 def calculate_and_draw_cutting():
+    if cutting_object == 'p':
+        calculate_half_plane_cutting(cutting_object_points, current_polygon_points)
+
+def calculate_rectangle_cutting(xmin, ymin, xmax, ymax, polygon_verts):
     return
 
-def calculate_half_plabe_cutting():
-    return
+def get_lines_intesection(l1_points, l2_points):
+    print "get lines intersection"
+    l1x1, l1y1 = l1_points[0]
+    l1x2, l1y2 = l1_points[1]
+    m1 = (l1y2 - l1y1) / (l1x2 - l1x1)
+    c1 = (-m1 * l1x1) + l1y1
+
+    l2x1, l2y1 = l2_points[0]
+    l2x2, l2y2 = l2_points[1]
+    m2 = (l2y2 - l2y1) / (l2x2 - l2x1)
+    c2 = (-m2 * l2x1) + l2y1
+
+    x = (c1 - c2) /  (m1 - m2)
+    y = m1 * x - c1
+
+    return (x, y)
+
+
+def calculate_half_plane_cutting(vector, polygon_verts):
+
+    p1 = vector[0];
+    p2 = vector[1]
+    x1, y1 = p1
+    x2, y2 = p2
+    m = (y2 - y1) / (x2 - x1)
+    c = (-m * x1) + y1
+
+    ox, oy = p1
+    px, py = p2
+    angle = -math.pi / 6.0;
+    qx = ox + math.cos(angle) * (px - ox) - math.sin(angle) * (py - oy)
+    qy = oy + math.sin(angle) * (px - ox) + math.cos(angle) * (py - oy)
+    inside_point = (int(qx), int(qy))
+
+    draw_lines_and_points([inside_point], green)
+
+    get_line_eq_right_part_value = lambda point : m * point[0] - c
+    check_inside = lambda point : ((inside_point[1] < get_line_eq_right_part_value(inside_point)) and (point[1] < get_line_eq_right_part_value(point))) or\
+                                  ((inside_point[1] > get_line_eq_right_part_value(inside_point)) and (point[1] > get_line_eq_right_part_value(point)))
+
+    cut_points = []
+    verts_len = len(polygon_verts)
+    for i in range(verts_len):
+        edge_p1 = polygon_verts[i];
+        edge_p2 = polygon_verts[(i + 1) % verts_len]
+
+        p1_inside = check_inside(edge_p1)
+        p2_inside = check_inside(edge_p2)
+
+        if p1_inside and p2_inside:
+            cut_points.append(edge_p2)
+        elif not(p1_inside or p2_inside):
+            continue
+        else:
+            crosspoint = get_lines_intesection([vector, (edge_p1, edge_p2)])
+
+            if (not p1_inside) and p2_inside:
+                cut_points.append(crosspoint)
+                cut_points.append(edge_p2)
+            else:
+                cut_points.append(crosspoint)
+
+    draw_lines_and_points(cut_points, red, False)
+
 
 pygame.init()
 
