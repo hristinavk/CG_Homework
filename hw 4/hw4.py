@@ -17,10 +17,6 @@ yellow = (255, 255, 0)
 colors = [black, red, green, blue, purple, yellow, aquamarine]
 colors_count = len(colors)
 
-def distance(a, b):
-    return math.sqrt((b[0] - a[0]) ** 2 + (b[1] - a[1]) ** 2)
-
-
 def set_pixel(pixel, color = black, pixel_size = 1):
     surface = pygame.display.get_surface()
     for i in range(pixel_size):
@@ -109,27 +105,54 @@ def draw_cutting_object(cutting_object_points):
     draw_lines_and_points(points, blue, False)
 
 def calculate_and_draw_cutting():
+    cut_points = []
     if cutting_object == 'p':
-        calculate_half_plane_cutting(cutting_object_points, current_polygon_points)
+        calculate_half_plane_cutting(cutting_object_points, current_polygon_points, cut_points)
+    elif cutting_object == 'r':
+        calculate_rectangle_cutting(cutting_object_points[0], cutting_object_points[1], current_polygon_points, cut_points)
 
-def calculate_rectangle_cutting(xmin, ymin, xmax, ymax, polygon_verts):
-    return
+    if len(cut_points) > 0:
+        cut_points.append(cut_points[0])
+
+    draw_lines_and_points(cut_points, red, False)
+
+def calculate_rectangle_cutting(top_left, bottom_right, polygon_verts, cut_points):
+    top_right = (bottom_right[0], top_left[1])
+    bottom_left = (top_left[0], bottom_right[1])
+
+    current_points = current_polygon_points
+    result_points = []
+    calculate_half_plane_cutting([top_left, top_right], current_points, result_points, bottom_left)
+
+    current_points = result_points;
+    result_points = []
+    calculate_half_plane_cutting([top_right, bottom_right], current_points, result_points, bottom_left)
+
+    current_points = result_points;
+    result_points = []
+    calculate_half_plane_cutting([bottom_right, bottom_left], current_points, result_points, top_right)
+
+    calculate_half_plane_cutting([bottom_left, top_left], result_points, cut_points, top_right)
 
 def get_lines_intesection(l1_points, l2_points):
     l1x1, l1y1 = l1_points[0]
     l1x2, l1y2 = l1_points[1]
-    m1 = float(l1y2 - l1y1) / float(l1x2 - l1x1)
+    m1 = 0
+    if not l1x2 == l1x1:
+        m1 = float(l1y2 - l1y1) / float(l1x2 - l1x1)
 
     l2x1, l2y1 = l2_points[0]
     l2x2, l2y2 = l2_points[1]
-    m2 = float(l2y2 - l2y1) / float(l2x2 - l2x1)
+    m2 = 0
+    if not l2x2 == l2x1:
+        m2 = float(l2y2 - l2y1) / float(l2x2 - l2x1)
 
     x = float((m1 * l1x1) - (m2 * l2x1) - l1y1 + l2y1) / float(m1 - m2)
     y = m1 * (x - l1x1) + l1y1
 
     return (int(x), int(y))
 
-def calculate_half_plane_cutting(vector, polygon_verts):
+def calculate_half_plane_cutting(vector, polygon_verts, cut_points, inside_point = ()):
 
     p1 = vector[0];
     p2 = vector[1]
@@ -139,12 +162,13 @@ def calculate_half_plane_cutting(vector, polygon_verts):
     if not x2 == x1:
         m = float(y2 - y1) / float(x2 - x1)
 
-    ox, oy = p1
-    px, py = p2
-    angle = -math.pi / 6.0;
-    qx = ox + math.cos(angle) * (px - ox) - math.sin(angle) * (py - oy)
-    qy = oy + math.sin(angle) * (px - ox) + math.cos(angle) * (py - oy)
-    inside_point = (int(qx), int(qy))
+    if inside_point == ():
+        ox, oy = p1
+        px, py = p2
+        angle = -math.pi / 6.0;
+        qx = ox + math.cos(angle) * (px - ox) - math.sin(angle) * (py - oy)
+        qy = oy + math.sin(angle) * (px - ox) + math.cos(angle) * (py - oy)
+        inside_point = (int(qx), int(qy))
 
     get_line_eq = lambda point: m * (point[0] - x1) - point[1] + y1
 
@@ -152,7 +176,6 @@ def calculate_half_plane_cutting(vector, polygon_verts):
 
     check_same_sign = lambda v1, v2 : ((v1 > 0) and ( v2 > 0)) or ((v1 < 0) and (v2 < 0))
 
-    cut_points = []
     verts_len = len(polygon_verts)
     for i in range(verts_len):
         edge_p1 = polygon_verts[i];
@@ -176,9 +199,6 @@ def calculate_half_plane_cutting(vector, polygon_verts):
                 cut_points.append(edge_p2)
             else:
                 cut_points.append(crosspoint)
-
-    cut_points.append(cut_points[0])
-    draw_lines_and_points(cut_points, red, False)
 
 
 pygame.init()
