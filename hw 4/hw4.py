@@ -116,23 +116,45 @@ def calculate_and_draw_cutting():
 
     draw_lines_and_points(cut_points, red, False)
 
+def calculate_rectangle_side_cutting(polygon_verts, cut_points, inside_check, intersection_point):
+    verts_len = len(polygon_verts)
+    for i in range(verts_len):
+        edge_p1 = polygon_verts[i];
+        edge_p2 = polygon_verts[(i + 1) % verts_len]
+
+        p1_inside = inside_check(edge_p1)
+        p2_inside = inside_check(edge_p2)
+
+        if p1_inside and p2_inside:
+            cut_points.append(edge_p2)
+        elif not(p1_inside or p2_inside):
+            continue
+        else:
+            crosspoint = intersection_point([edge_p1, edge_p2])
+
+            if (not p1_inside) and p2_inside:
+                cut_points.append(crosspoint)
+                cut_points.append(edge_p2)
+            else:
+                cut_points.append(crosspoint)
+
 def calculate_rectangle_cutting(top_left, bottom_right, polygon_verts, cut_points):
     top_right = (bottom_right[0], top_left[1])
     bottom_left = (top_left[0], bottom_right[1])
 
     current_points = current_polygon_points
     result_points = []
-    calculate_half_plane_cutting([top_left, top_right], current_points, result_points, bottom_left)
+    calculate_rectangle_side_cutting(current_points, result_points, lambda point : point[0] >= top_left[0], lambda line : get_point_from_line_with_min_x(line[0], line[1], top_left[0]))
 
     current_points = result_points;
     result_points = []
-    calculate_half_plane_cutting([top_right, bottom_right], current_points, result_points, bottom_left)
+    calculate_rectangle_side_cutting(current_points, result_points,  lambda point : point[1] >= top_left[1], lambda line : get_point_from_line_with_y(line[0], line[1], top_left[1]))
 
     current_points = result_points;
     result_points = []
-    calculate_half_plane_cutting([bottom_right, bottom_left], current_points, result_points, top_right)
+    calculate_rectangle_side_cutting(current_points, result_points,  lambda point : point[0] <= bottom_right[0], lambda line : get_point_from_line_with_x(line[0], line[1], bottom_right[0]))
 
-    calculate_half_plane_cutting([bottom_left, top_left], result_points, cut_points, top_right)
+    calculate_rectangle_side_cutting(result_points, cut_points, lambda point : point[1] <= bottom_right[1], lambda line : get_point_from_line_with_max_y(line[0], line[1], bottom_right[1]))
 
 def get_lines_intesection(l1_points, l2_points):
     l1x1, l1y1 = l1_points[0]
@@ -149,6 +171,46 @@ def get_lines_intesection(l1_points, l2_points):
 
     x = float((m1 * l1x1) - (m2 * l2x1) - l1y1 + l2y1) / float(m1 - m2)
     y = m1 * (x - l1x1) + l1y1
+
+    return (int(x), int(y))
+
+def get_point_from_line_with_x(p1, p2, x):
+    x1, y1 = p1
+    x2, y2 = p2
+    m = 0
+    if not x2 == x1:
+        m = float(y2 - y1) / float(x2 - x1)
+
+    y = m * (x - x1) + y1
+
+    return (int(x), int(y))
+
+def get_point_from_line_with_y(p1, p2, y):
+    x1, y1 = p1
+    x2, y2 = p2
+    m = 0
+    if not x2 == x1:
+        m = float(y2 - y1) / float(x2 - x1)
+
+    x = 0
+    if not m == 0:
+        x = (y - y1 + (m * x1)) / m
+
+    return (int(x), int(y))
+
+def get_point_from_line_with_min_x(p1, p2, x):
+    x1, y1 = p1
+    x2, y2 = p2
+
+    y = y1 + float(y2 - y1) * float(x - x1) / float(x2 - x1)
+
+    return (int(x), int(y))
+
+def get_point_from_line_with_max_y(p1, p2, y):
+    x1, y1 = p1
+    x2, y2 = p2
+    
+    x = x1 + float(x2 - x1) * float(y - y1) /  float(y2 - y1)
 
     return (int(x), int(y))
 
