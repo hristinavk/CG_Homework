@@ -69,7 +69,7 @@ def generate_simple_line(point_A, point_B, pixels):
         pixels.append((x + x1, y + y1))
 
 
-def draw_lines_and_points(points, color = black, draw_points = True):
+def draw_lines_and_points(points, color = black, draw_points = True, line_pixel_size = 1):
 
     if draw_points:
         for point in points:
@@ -84,7 +84,7 @@ def draw_lines_and_points(points, color = black, draw_points = True):
         generate_simple_line(points[i], points[i + 1], lines)
 
     for pixel in lines:
-        set_pixel(pixel, color)
+        set_pixel(pixel, color, line_pixel_size)
 
 def draw_cutting_object(cutting_object_points):
     if len(cutting_object_points) == 1:
@@ -114,7 +114,7 @@ def calculate_and_draw_cutting():
     if len(cut_points) > 0:
         cut_points.append(cut_points[0])
 
-    draw_lines_and_points(cut_points, red, False)
+    draw_lines_and_points(cut_points, red, False, 2)
 
 def calculate_rectangle_side_cutting(polygon_verts, cut_points, inside_check, intersection_point):
     verts_len = len(polygon_verts)
