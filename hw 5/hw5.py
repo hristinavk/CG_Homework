@@ -143,11 +143,12 @@ screen = pygame.display.set_mode(screen_size)
 
 screen.fill(white)
 
-control_points = [[(249, 101), (307, 141), (308, 213), (248, 246)],
-                  [(338, 99), (276, 138), (275, 210), (347, 242)]]
+control_points = []
+#[[(249, 101), (307, 141), (308, 213), (248, 246)],
+ #                 [(338, 99), (276, 138), (275, 210), (347, 242)]]
 
-for points in control_points:
-    add_bezier_curve(points)
+#for points in control_points:
+#    add_bezier_curve(points)
 
 control_points.append([])
 
